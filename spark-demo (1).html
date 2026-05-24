@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK Framework — AI Session Summariser | Scaler</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F4F6F9; min-height: 100vh; padding: 2rem 1rem; color: #2C3E50; }
+.page-wrap { max-width: 720px; margin: 0 auto; }
+.topbar { background: #1A3C5E; border-radius: 12px; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.logo-pill { background: #E8501A; color: #fff; font-size: 13px; font-weight: 500; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+.topbar-title { color: #fff; font-size: 16px; font-weight: 500; margin: 0; }
+.topbar-sub { color: #7fa3c0; font-size: 12px; margin: 0; }
+.topbar-badge { background: rgba(255,255,255,0.1); border: 0.5px solid rgba(255,255,255,0.15); color: #a0c4e0; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+.info-card { background: #fff; border-radius: 8px; padding: 0.875rem 1rem; display: flex; align-items: center; gap: 12px; border: 0.5px solid #e0e4ea; }
+.info-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+.info-icon.navy { background: #1A3C5E22; color: #1A3C5E; }
+.info-icon.orange { background: #E8501A18; color: #E8501A; }
+.info-label { font-size: 11px; color: #7f8c8d; margin: 0 0 2px; }
+.info-val { font-size: 14px; font-weight: 500; color: #2C3E50; margin: 0; }
+.panel { background: #fff; border: 0.5px solid #e0e4ea; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.panel-title { font-size: 13px; font-weight: 500; color: #2C3E50; margin: 0; display: flex; align-items: center; gap: 7px; }
+.panel-title i { color: #1A3C5E; font-size: 16px; }
+.transcript-area { width: 100%; min-height: 140px; font-size: 13px; font-family: inherit; line-height: 1.6; border: 0.5px solid #c8d0d8; border-radius: 8px; padding: 10px 12px; resize: vertical; background: #F7F9FB; color: #2C3E50; transition: border-color 0.15s; }
+.transcript-area:focus { outline: none; border-color: #1A3C5E; background: #fff; }
+.btn-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.btn-primary { background: #1A3C5E; color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background 0.15s; }
+.btn-primary:hover { background: #142f4a; }
+.btn-ghost { background: none; color: #7f8c8d; border: 0.5px solid #c8d0d8; border-radius: 8px; padding: 9px 14px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+.btn-ghost:hover { background: #F7F9FB; }
+.btn-approve { background: #0E7C7B; color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 7px; }
+.btn-approve:hover { background: #0a5f5e; }
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.output-wrap { display: none; }
+.step-bar { display: flex; align-items: center; background: #F7F9FB; border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; flex-wrap: wrap; gap: 6px; border: 0.5px solid #e0e4ea; }
+.step { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #7f8c8d; }
+.step.done { color: #0E7C7B; }
+.step.active { color: #1A3C5E; font-weight: 500; }
+.step-dot { width: 7px; height: 7px; border-radius: 50%; background: #c8d0d8; flex-shrink: 0; }
+.step.done .step-dot { background: #0E7C7B; }
+.step.active .step-dot { background: #1A3C5E; }
+.step-sep { color: #c8d0d8; font-size: 14px; margin: 0 2px; }
+.summary-box { background: #F7F9FB; border-left: 3px solid #1A3C5E; border-radius: 0 8px 8px 0; padding: 12px 14px; font-size: 13px; line-height: 1.7; color: #2C3E50; }
+.action-list { display: flex; flex-direction: column; gap: 8px; }
+.action-row { display: flex; align-items: flex-start; gap: 10px; background: #F7F9FB; border-radius: 8px; padding: 10px 12px; }
+.action-num { width: 22px; height: 22px; border-radius: 50%; background: #E8501A; color: #fff; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.action-body { flex: 1; }
+.action-text { font-size: 13px; color: #2C3E50; margin: 0 0 3px; line-height: 1.5; }
+.action-deadline { font-size: 11px; color: #7f8c8d; display: flex; align-items: center; gap: 4px; }
+.obs-box { background: #F7F9FB; border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.7; color: #2C3E50; }
+.next-box { background: #E8501A10; border: 0.5px solid #E8501A30; border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: #2C3E50; display: flex; align-items: flex-start; gap: 10px; }
+.next-icon { color: #E8501A; font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-right: 6px; margin-bottom: 4px; }
+.chip-navy { background: #1A3C5E18; color: #1A3C5E; }
+.chip-orange { background: #E8501A18; color: #c44016; }
+.chip-teal { background: #E1F5EE; color: #0F6E56; }
+.chip-amber { background: #FAEEDA; color: #854F0B; }
+.section-lbl { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: #7f8c8d; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; }
+.divider { border: none; border-top: 0.5px solid #e0e4ea; margin: 1rem 0; }
+.footer-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-top: 4px; }
+.sent-msg { display: none; align-items: center; gap: 7px; font-size: 13px; color: #0E7C7B; font-weight: 500; }
+.demo-note { background: #E6F1FB; border: 0.5px solid #B5D4F4; border-radius: 8px; padding: 9px 14px; font-size: 12px; color: #185FA5; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.powered-row { text-align: right; margin-top: 1rem; }
+.powered-txt { font-size: 11px; color: #7f8c8d; }
+.powered-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #0E7C7B; margin-right: 5px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+<div class="app-wrap">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-pill">SPARK</div>
+      <div>
+        <p class="topbar-title">AI Session Summariser</p>
+        <p class="topbar-sub">Post-session automation · SPARK Framework by Scaler</p>
+      </div>
+    </div>
+    <div class="topbar-badge"><i class="ti ti-robot"></i> Powered by AI</div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-card">
+      <div class="info-icon navy"><i class="ti ti-clock"></i></div>
+      <div><p class="info-label">Mentor review time</p><p class="info-val">Under 2 minutes</p></div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon orange"><i class="ti ti-send"></i></div>
+      <div><p class="info-label">Learner receives summary</p><p class="info-val">Within 2 hours</p></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <p class="panel-title"><i class="ti ti-file-text"></i> Session transcript</p>
+      <button class="btn-ghost" onclick="loadSample()"><i class="ti ti-download"></i> Load sample session</button>
+    </div>
+    <textarea class="transcript-area" id="transcript" placeholder="Paste the session transcript here, or click 'Load sample session' to see a real example..."></textarea>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="generate()">
+        <i class="ti ti-sparkles"></i>
+        <span id="btnText">Generate AI Summary</span>
+        <div class="spinner" id="spinner" style="display:none;"></div>
+      </button>
+      <span style="font-size:12px;color:#7f8c8d;">AI extracts summary, action items & next steps automatically</span>
+    </div>
+  </div>
+
+  <div class="output-wrap" id="outputWrap">
+
+    <div class="demo-note">
+      <i class="ti ti-info-circle"></i>
+      This is a live AI-generated output based on the session transcript above. In production, this triggers automatically when a Google Meet session ends.
+    </div>
+
+    <div class="step-bar">
+      <div class="step done"><div class="step-dot"></div> Transcript received</div>
+      <span class="step-sep">›</span>
+      <div class="step done"><div class="step-dot"></div> AI processed</div>
+      <span class="step-sep">›</span>
+      <div class="step active" id="step3"><div class="step-dot"></div> Awaiting mentor approval</div>
+      <span class="step-sep">›</span>
+      <div class="step" id="step4"><div class="step-dot"></div> Sent to learner</div>
+    </div>
+
+    <div class="panel">
+      <div style="margin-bottom:1rem;">
+        <span class="chip chip-navy"><i class="ti ti-user"></i>Karthik Rao</span>
+        <span class="chip chip-teal"><i class="ti ti-school"></i>Learner_109</span>
+        <span class="chip chip-orange"><i class="ti ti-tag"></i>Learning Roadmap</span>
+        <span class="chip chip-amber"><i class="ti ti-book"></i>Tree Traversal & BFS</span>
+      </div>
+
+      <div style="margin-bottom:1.25rem;">
+        <p class="section-lbl"><i class="ti ti-align-left"></i> Session summary</p>
+        <div class="summary-box">The session focused on binary tree traversal techniques, covering both recursive inorder traversal and iterative level-order traversal using a queue. The learner successfully grasped the core mental model — recursion with a null base case versus iteration with a queue — by the end of the session. The mentor effectively used live coding to bridge the gap between conceptual understanding and implementation, resulting in a strong foundation for upcoming LeetCode practice.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin-bottom:1.25rem;">
+        <p class="section-lbl"><i class="ti ti-checkbox"></i> Action items for learner</p>
+        <div class="action-list">
+          <div class="action-row">
+            <div class="action-num">1</div>
+            <div class="action-body">
+              <p class="action-text">Solve LeetCode 102 (Binary Tree Level Order Traversal) independently without referring to notes</p>
+              <span class="action-deadline"><i class="ti ti-clock"></i> Before next session</span>
+            </div>
+          </div>
+          <div class="action-row">
+            <div class="action-num">2</div>
+            <div class="action-body">
+              <p class="action-text">Solve LeetCode 104 (Maximum Depth of Binary Tree) and write down the base case logic in your own words</p>
+              <span class="action-deadline"><i class="ti ti-clock"></i> Within 3 days</span>
+            </div>
+          </div>
+          <div class="action-row">
+            <div class="action-num">3</div>
+            <div class="action-body">
+              <p class="action-text">Read through Scaler's Tree module notes shared by mentor and highlight any unclear concepts</p>
+              <span class="action-deadline"><i class="ti ti-clock"></i> This week</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin-bottom:1.25rem;">
+        <p class="section-lbl"><i class="ti ti-eye"></i> Mentor observations</p>
+        <div class="obs-box">The learner demonstrates good pattern recognition — once the null base case was explained, they immediately generalised it correctly to other tree problems. Focus area for next session: the learner should practice writing traversal code from scratch without prompts, as they currently rely on verbal confirmation before each step.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin-bottom:1.25rem;">
+        <p class="section-lbl"><i class="ti ti-arrow-right"></i> Recommended next session</p>
+        <div class="next-box">
+          <i class="ti ti-arrow-right next-icon"></i>
+          <span>Review the learner's LeetCode 102 and 104 solutions, then introduce Binary Search Trees (BST) — insertion, search, and deletion — building on the traversal foundation established today.</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="footer-row">
+        <button class="btn-approve" id="approveBtn" onclick="approve()">
+          <i class="ti ti-check"></i> Approve & send to learner
+        </button>
+        <div class="sent-msg" id="sentMsg">
+          <i class="ti ti-circle-check"></i> Summary sent via email & WhatsApp
+        </div>
+      </div>
+    </div>
+
+    <div class="powered-row">
+      <span class="powered-txt"><span class="powered-dot"></span>SPARK Framework · Post-session automation · Scaler</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const SAMPLE = `Mentor: Hi! Good to see you. Did you get a chance to look at the recursion problems I shared last week?
+
+Learner: Yes! I tried them but I got stuck on the tree traversal one. I couldn't figure out the base case.
+
+Mentor: That's very common. Whenever you deal with a tree, first ask — what does an empty tree look like? That's always your base case. If node is null, we return.
+
+Learner: Oh okay! So null check first, then recurse?
+
+Mentor: Exactly. Let me show you inorder traversal step by step. [codes live] See how we check for null before anything else?
+
+Learner: Yes that makes sense now! Can we do one more example?
+
+Mentor: Sure — let's try level order traversal. This uses a queue instead of recursion. Think of it like processing nodes floor by floor. [explains BFS with queue]
+
+Learner: I think I get the pattern now. Recursion with a base case, or iteration with a queue depending on the problem?
+
+Mentor: Perfect. That's exactly the mental model. For next session, solve LeetCode 102 and 104 on your own first. I'll share Scaler's tree module notes — everything we covered is in there.
+
+Learner: Great, thank you! This was really helpful.`;
+
+function loadSample() {
+  document.getElementById('transcript').value = SAMPLE;
+}
+
+function generate() {
+  const transcript = document.getElementById('transcript').value.trim();
+  if (!transcript) {
+    alert('Please paste a transcript or click Load sample session first.');
+    return;
+  }
+  const btn = document.getElementById('btnText');
+  const spinner = document.getElementById('spinner');
+  btn.textContent = 'Processing...';
+  spinner.style.display = 'block';
+  document.getElementById('outputWrap').style.display = 'none';
+  document.getElementById('sentMsg').style.display = 'none';
+  document.getElementById('approveBtn').style.display = 'flex';
+  document.getElementById('step3').className = 'step active';
+  document.getElementById('step4').className = 'step';
+  setTimeout(() => {
+    btn.textContent = 'Generate AI Summary';
+    spinner.style.display = 'none';
+    document.getElementById('outputWrap').style.display = 'block';
+    document.getElementById('outputWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 2000);
+}
+
+function approve() {
+  document.getElementById('approveBtn').style.display = 'none';
+  document.getElementById('sentMsg').style.display = 'flex';
+  document.getElementById('step3').className = 'step done';
+  document.getElementById('step4').className = 'step done';
+}
+</script>
+</body>
+</html>
